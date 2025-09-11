@@ -3,26 +3,16 @@ import {
   type UserResponseDtoType,
 } from "../dto/user-response.dto.js";
 import type { CreateUserDtoType } from "../dto/create-user.dto.js";
-import {
-  Prisma,
-  PrismaClient,
-  type User,
-} from "../../generated/prisma/index.js";
 import type { UpdateUserDtoType } from "../dto/update-user.dto.js";
+import { Prisma, PrismaClient, type User } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export class UserService {
   async create(data: CreateUserDtoType): Promise<UserResponseDtoType> {
-    const user = await prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      },
+    return await prisma.user.create({
+      data,
     });
-
-    return user;
   }
 
   async findMany(): Promise<UserResponseDtoType[]> {
@@ -38,23 +28,21 @@ export class UserService {
   }
 
   async findUniqueByEmail(email: string): Promise<User | null> {
-    const user = await prisma.user.findUnique({
+    return await prisma.user.findUnique({
       where: { email },
     });
-
-    return user;
   }
 
   async update(
     id: number,
     updateData: UpdateUserDtoType
   ): Promise<UserResponseDtoType> {
-    const user = await prisma.user.update({
+    return await prisma.user.update({
       where: { id },
       data: updateData as Prisma.UserUpdateInput,
     });
 
-    return UserResponseDto.parse(user);
+    //return UserResponseDto.parse(user);
   }
 
   async delete(id: number): Promise<object> {

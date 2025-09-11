@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -42,10 +41,9 @@ model PurchaseRequest {
   userId          Int
   user            User              @relation(fields: [userId], references: [id])
   items           RequestItems[]
-  status          String            @default("DRAFT")
+  approvalHistory ApprovalHistory[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  approvalHistory ApprovalHistory[]
 }
 
 model RequestItems {
@@ -59,8 +57,8 @@ model RequestItems {
 
 model ApprovalHistory {
   id                Int             @id @default(autoincrement())
-  status            String
   purchaseRequestId Int
   purchaseRequest   PurchaseRequest @relation(fields: [purchaseRequestId], references: [id])
+  status            RequestStatus
   createdAt         DateTime        @default(now())
 }

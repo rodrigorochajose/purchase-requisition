@@ -4,26 +4,62 @@ import { UserController } from "../controllers/user.controller.js";
 import { AuthController } from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { roleMiddleware } from "../middlewares/role.middleware.js";
+import { PurchaseRequestController } from "../controllers/purchase-request.controller.js";
+import { ApprovalHistoryController } from "../controllers/approval-history.controller.js";
 
 const routes = Router();
-const userController = new UserController();
 const authController = new AuthController();
+const userController = new UserController();
+const purchaseReqController = new PurchaseRequestController();
+const approvalHistController = new ApprovalHistoryController();
 
 routes.get("/", (req: Request, res: Response) => {
   return res.json({ message: "API is running!" });
 });
 
-routes.post("/login", authController.login);
+routes.post("/auth/register", authController.register);
+routes.post("/auth/login", authController.login);
 
-routes.post("/user", userController.create);
+routes.get("/user/:id", authMiddleware, userController.findUnique);
+routes.patch("/user/:id", authMiddleware, userController.update);
 routes.get("/users", authMiddleware, userController.findMany);
-routes.get(
-  "/user/:id",
+
+routes.post("/requests", authMiddleware, purchaseReqController.create);
+routes.get("/requests", authMiddleware, purchaseReqController.findMany);
+routes.get("/requests/:id", authMiddleware, purchaseReqController.findUnique);
+routes.patch("/requests/:id", authMiddleware, purchaseReqController.update);
+routes.delete("/requests/:id", authMiddleware, purchaseReqController.delete);
+
+routes.post(
+  "/requests/:id/submit",
+  authMiddleware,
+  (req: Request, res: Response) => {
+    approvalHistController.updateStatus(req, res, "SUBMITTED");
+  }
+);
+
+routes.post(
+  "/requests/:id/approve",
   authMiddleware,
   roleMiddleware(["APPROVER"]),
-  userController.findUnique
+  (req: Request, res: Response) => {
+    approvalHistController.updateStatus(req, res, "APPROVED");
+  }
 );
-routes.patch("/user/:id", userController.update);
-routes.delete("/user/:id", userController.delete);
+
+routes.post(
+  "/requests/:id/reject",
+  authMiddleware,
+  roleMiddleware(["APPROVER"]),
+  (req: Request, res: Response) => {
+    approvalHistController.updateStatus(req, res, "REJECTED");
+  }
+);
+
+routes.get(
+  "/requests/summary",
+  authMiddleware,
+  approvalHistController.getSummary
+);
 
 export { routes };

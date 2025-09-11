@@ -1,6 +1,6 @@
+import type { Role } from "@prisma/client";
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import type { Role } from "../../generated/prisma/index.js";
 
 interface JwtPayload {
   userId: number;
