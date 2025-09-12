@@ -1,9 +1,13 @@
 import z from "zod";
-import { RequestItemDto } from "./request-item.dto.js";
 
-export const UpdatePurchaseRequestDto = z.object({
-  items: z.array(RequestItemDto),
+const UpdatePurchaseRequestSchema = z.object({
+  purchaseRequestId: z.number().int().positive().optional(),
+  description: z.string().min(1).optional(),
+  quantity: z.number().int().min(1).optional(),
+  price: z.number().min(0).optional(),
 });
+
+export const UpdatePurchaseRequestDto = z.array(UpdatePurchaseRequestSchema);
 
 export type UpdatePurchaseRequestDtoType = z.infer<
   typeof UpdatePurchaseRequestDto

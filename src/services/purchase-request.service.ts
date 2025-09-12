@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient, type PurchaseRequest } from "@prisma/client";
-import type { CreatePurchaseRequestDtoType } from "../dto/create-purchase-request.dto.js";
-import type { UpdatePurchaseRequestDtoType } from "../dto/update-purchase-request.dto.js";
+import { type CreatePurchaseRequestDtoType } from "../dto/create-purchase-request.dto.js";
+import { type UpdatePurchaseRequestDtoType } from "../dto/update-purchase-request.dto.js";
+import { type CreateRequestItemsDtoType } from "../dto/create-request-items.dto.js";
 
 const prisma = new PrismaClient();
 
@@ -52,7 +53,68 @@ export class PurchaseRequestService {
     return purchaseReq !== null;
   }
 
-  async update() {}
+  async update(id: number, updateDto: UpdatePurchaseRequestDtoType) {
+    const existingItems = await prisma.requestItems.findMany({
+      where: { purchaseRequestId: id },
+    });
 
-  async delete() {}
+    console.log(existingItems[0]);
+
+    const countExistingItems = existingItems.length;
+    const countNewItems = updateDto.length;
+
+    if (countExistingItems > countNewItems) {
+      console.log("deleting");
+      const itemsToDelete = existingItems.splice(
+        0,
+        countExistingItems - countNewItems
+      );
+
+      itemsToDelete.forEach(async (element) => {
+        await prisma.requestItems.delete({ where: { id: element.id } });
+      });
+    } else if (countExistingItems < countNewItems) {
+      console.log("adding");
+
+      const itemsToAdd = updateDto.splice(
+        0,
+        countNewItems - countExistingItems
+      );
+
+      const data: CreateRequestItemsDtoType = itemsToAdd.map((item) => {
+        return {
+          purchaseRequestId: id,
+          description: item.description ?? "",
+          quantity: item.quantity ?? 1,
+          price: item.price ?? 1,
+        };
+      });
+
+      await prisma.requestItems.createMany({
+        data,
+      });
+    }
+
+    console.log("updating");
+
+    const updatePromises = updateDto.map((item, index) => {
+      const existingItem = existingItems[index];
+
+      if (!existingItem) {
+        console.log("Item não encontrado");
+        return Promise.resolve();
+      }
+
+      return prisma.requestItems.update({
+        where: { id: existingItem.id },
+        data: item as Prisma.RequestItemsUpdateInput,
+      });
+    });
+
+    await Promise.all(updatePromises);
+
+    return await prisma.requestItems.findMany({
+      where: { purchaseRequestId: id },
+    });
+  }
 }

@@ -5,6 +5,7 @@ import {
   type UpdateUserDtoType,
 } from "../dto/update-user.dto.js";
 import type { UserResponseDtoType } from "../dto/user-response.dto.js";
+import z from "zod";
 
 const userService = new UserService();
 
@@ -31,8 +32,15 @@ export class UserController {
 
       return res.status(200).json(userResponse);
     } catch (error: any) {
-      console.log(error);
-      return res.status(500).json({ error: "Internal Server Error" });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: error.issues,
+        });
+      }
+
+      console.error(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   }
 
@@ -85,8 +93,15 @@ export class UserController {
         return res.status(409).json({ error: "Email já existe" });
       }
 
-      console.log(error);
-      return res.status(500).json({ error: "Internal Server Error" });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: error.issues,
+        });
+      }
+
+      console.error(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   }
 }

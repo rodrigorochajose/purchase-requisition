@@ -1,4 +1,3 @@
-// No seu arquivo DTO, por exemplo, src/dtos/approval.dto.ts
 import { RequestStatus } from "@prisma/client";
 import { z } from "zod";
 

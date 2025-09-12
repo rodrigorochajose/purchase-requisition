@@ -7,9 +7,19 @@ import {
 const prisma = new PrismaClient();
 
 export class ApprovalHistoryService {
-  async findUnique(id: number): Promise<ApprovalHistory | null> {
-    return await prisma.approvalHistory.findUnique({
-      where: { id },
+  async getStatus(id: number): Promise<RequestStatus | null> {
+    const status = await prisma.approvalHistory.findFirst({
+      where: { purchaseRequestId: id },
+      select: { status: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return status ? status.status : null;
+  }
+
+  async find(id: number): Promise<ApprovalHistory | null> {
+    return await prisma.approvalHistory.findFirst({
+      where: { purchaseRequestId: id },
     });
   }
 
@@ -19,14 +29,29 @@ export class ApprovalHistoryService {
     });
   }
 
-  async create(
-    purchaseReqId: number,
-    status: string
-  ): Promise<ApprovalHistory> {
+  async submit(purchaseReqId: number): Promise<ApprovalHistory> {
     return await prisma.approvalHistory.create({
       data: {
         purchaseRequestId: purchaseReqId,
-        status: RequestStatus[status as keyof typeof RequestStatus],
+        status: "SUBMITTED",
+      },
+    });
+  }
+
+  async approve(purchaseReqId: number): Promise<ApprovalHistory> {
+    return await prisma.approvalHistory.create({
+      data: {
+        purchaseRequestId: purchaseReqId,
+        status: "APPROVED",
+      },
+    });
+  }
+
+  async reject(purchaseReqId: number): Promise<ApprovalHistory> {
+    return await prisma.approvalHistory.create({
+      data: {
+        purchaseRequestId: purchaseReqId,
+        status: "REJECTED",
       },
     });
   }

@@ -28,7 +28,6 @@ routes.post("/requests", authMiddleware, purchaseReqController.create);
 routes.get("/requests", authMiddleware, purchaseReqController.findMany);
 routes.get("/requests/:id", authMiddleware, purchaseReqController.findUnique);
 routes.patch("/requests/:id", authMiddleware, purchaseReqController.update);
-routes.delete("/requests/:id", authMiddleware, purchaseReqController.delete);
 
 routes.get(
   "/history/:id",
@@ -40,7 +39,7 @@ routes.post(
   "/requests/:id/submit",
   authMiddleware,
   (req: Request, res: Response) => {
-    approvalHistController.create(req, res, "SUBMITTED");
+    approvalHistController.submit(req, res);
   }
 );
 
@@ -49,7 +48,7 @@ routes.post(
   authMiddleware,
   roleMiddleware(["APPROVER"]),
   (req: Request, res: Response) => {
-    approvalHistController.create(req, res, "APPROVED");
+    approvalHistController.approve(req, res);
   }
 );
 
@@ -58,7 +57,7 @@ routes.post(
   authMiddleware,
   roleMiddleware(["APPROVER"]),
   (req: Request, res: Response) => {
-    approvalHistController.create(req, res, "REJECTED");
+    approvalHistController.reject(req, res);
   }
 );
 

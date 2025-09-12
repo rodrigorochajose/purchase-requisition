@@ -1,7 +1,4 @@
-import {
-  UserResponseDto,
-  type UserResponseDtoType,
-} from "../dto/user-response.dto.js";
+import { type UserResponseDtoType } from "../dto/user-response.dto.js";
 import type { CreateUserDtoType } from "../dto/create-user.dto.js";
 import type { UpdateUserDtoType } from "../dto/update-user.dto.js";
 import { Prisma, PrismaClient, type User } from "@prisma/client";
@@ -41,13 +38,5 @@ export class UserService {
       where: { id },
       data: updateData as Prisma.UserUpdateInput,
     });
-  }
-
-  async delete(id: number): Promise<object> {
-    await prisma.user.delete({
-      where: { id },
-    });
-
-    return { message: "Usuário deletado" };
   }
 }

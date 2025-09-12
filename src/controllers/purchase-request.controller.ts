@@ -4,6 +4,8 @@ import {
   CreatePurchaseRequestDto,
   type CreatePurchaseRequestDtoType,
 } from "../dto/create-purchase-request.dto.js";
+import { UpdatePurchaseRequestDto } from "../dto/update-purchase-request.dto.js";
+import z from "zod";
 
 const purchaseReqService = new PurchaseRequestService();
 
@@ -18,8 +20,15 @@ export class PurchaseRequestController {
 
       return res.status(201).json(purchaseReq);
     } catch (error: any) {
-      console.log(error);
-      return res.status(500).json({ error: "Internal Server Error" });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: error.issues,
+        });
+      }
+
+      console.error(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   }
 
@@ -48,10 +57,33 @@ export class PurchaseRequestController {
   }
 
   async update(req: Request, res: Response) {
-    return res.status(200).json({ error: "ainda nao implementado" });
-  }
+    const { id } = req.params;
+    const purchaseReqId = Number(id);
 
-  async delete(req: Request, res: Response) {
-    return res.status(200).json({ error: "ainda nao implementado" });
+    const data = UpdatePurchaseRequestDto.parse(req.body);
+
+    const purchaseReqExists = await purchaseReqService.hasPurchaseReq(
+      purchaseReqId
+    );
+
+    if (!purchaseReqExists) {
+      return res.status(404).json({ error: "Registro não encontrado" });
+    }
+
+    try {
+      const result = await purchaseReqService.update(purchaseReqId, data);
+
+      return res.status(200).json(result);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: error.issues,
+        });
+      }
+
+      console.error(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
   }
 }
