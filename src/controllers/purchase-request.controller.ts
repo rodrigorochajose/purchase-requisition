@@ -23,13 +23,13 @@ export class PurchaseRequestController {
     }
   }
 
-  async findMany(req: Request, res: Response) {
+  async findMany(req: Request, res: Response): Promise<Response> {
     const purchaseReqs = await purchaseReqService.findMany();
 
     return res.status(200).json(purchaseReqs);
   }
 
-  async findUnique(req: Request, res: Response) {
+  async findUnique(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const purchaseReqId = Number(id);
 
@@ -52,14 +52,6 @@ export class PurchaseRequestController {
   }
 
   async delete(req: Request, res: Response) {
-    return res.status(200).json({ error: "ainda nao implementado" });
-  }
-
-  async updateStatus(req: Request, res: Response) {
-    return res.status(200).json({ error: "ainda nao implementado" });
-  }
-
-  async getSummary(req: Request, res: Response) {
     return res.status(200).json({ error: "ainda nao implementado" });
   }
 }

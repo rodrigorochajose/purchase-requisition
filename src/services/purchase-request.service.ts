@@ -1,5 +1,6 @@
-import { PrismaClient, type PurchaseRequest } from "@prisma/client";
+import { Prisma, PrismaClient, type PurchaseRequest } from "@prisma/client";
 import type { CreatePurchaseRequestDtoType } from "../dto/create-purchase-request.dto.js";
+import type { UpdatePurchaseRequestDtoType } from "../dto/update-purchase-request.dto.js";
 
 const prisma = new PrismaClient();
 
@@ -24,7 +25,7 @@ export class PurchaseRequestService {
     });
   }
 
-  async findMany() {
+  async findMany(): Promise<PurchaseRequest[]> {
     return await prisma.purchaseRequest.findMany({
       include: {
         items: true,
@@ -33,7 +34,7 @@ export class PurchaseRequestService {
     });
   }
 
-  async findUnique(id: number) {
+  async findUnique(id: number): Promise<PurchaseRequest | null> {
     return await prisma.purchaseRequest.findUnique({
       where: { id },
       include: {
@@ -41,6 +42,14 @@ export class PurchaseRequestService {
         approvalHistory: true,
       },
     });
+  }
+
+  async hasPurchaseReq(id: number): Promise<boolean> {
+    const purchaseReq = await prisma.purchaseRequest.findFirst({
+      where: { id },
+    });
+
+    return purchaseReq !== null;
   }
 
   async update() {}

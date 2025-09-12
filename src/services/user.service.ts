@@ -41,8 +41,6 @@ export class UserService {
       where: { id },
       data: updateData as Prisma.UserUpdateInput,
     });
-
-    //return UserResponseDto.parse(user);
   }
 
   async delete(id: number): Promise<object> {

@@ -1,15 +1,42 @@
-import { PrismaClient } from "@prisma/client";
-import type { UpdateApprovalStatusDtoType } from "../dto/update-approval-history.dto.js";
+import {
+  PrismaClient,
+  RequestStatus,
+  type ApprovalHistory,
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export class ApprovalHistoryService {
-  async updateStatus(id: number, data: UpdateApprovalStatusDtoType) {
-    return await prisma.approvalHistory.update({
+  async findUnique(id: number): Promise<ApprovalHistory | null> {
+    return await prisma.approvalHistory.findUnique({
       where: { id },
-      data,
     });
   }
 
-  async getSummary() {}
+  async findByPurchaseReqId(id: number): Promise<ApprovalHistory[] | null> {
+    return await prisma.approvalHistory.findMany({
+      where: { purchaseRequestId: id },
+    });
+  }
+
+  async create(
+    purchaseReqId: number,
+    status: string
+  ): Promise<ApprovalHistory> {
+    return await prisma.approvalHistory.create({
+      data: {
+        purchaseRequestId: purchaseReqId,
+        status: RequestStatus[status as keyof typeof RequestStatus],
+      },
+    });
+  }
+
+  async getSummary() {
+    return await prisma.approvalHistory.groupBy({
+      by: ["status"],
+      _count: {
+        status: true,
+      },
+    });
+  }
 }

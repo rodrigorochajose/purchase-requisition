@@ -30,7 +30,7 @@ export class AuthController {
         updatedAt: newUser.updatedAt,
       };
 
-      return res.status(401).json(userResponse);
+      return res.status(201).json(userResponse);
     } catch (error: any) {
       if (error.code === "P2002") {
         return res.status(409).json({ error: "Email já existe" });
