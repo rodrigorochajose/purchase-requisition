@@ -6,6 +6,8 @@ import {
 } from "../dto/create-purchase-request.dto.js";
 import { UpdatePurchaseRequestDto } from "../dto/update-purchase-request.dto.js";
 import z from "zod";
+import { NotFoundException } from "../exceptions/notFoundException.js";
+import { StatusLockedException } from "../exceptions/statusLockedException.js";
 
 const purchaseReqService = new PurchaseRequestService();
 
@@ -38,19 +40,19 @@ export class PurchaseRequestController {
     return res.status(200).json(purchaseReqs);
   }
 
-  async findUnique(req: Request, res: Response): Promise<Response> {
+  async find(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const purchaseReqId = Number(id);
 
     try {
-      const purchaseReq = await purchaseReqService.findUnique(purchaseReqId);
-
-      if (!purchaseReq) {
-        return res.status(404).json({ error: "Registro não encontrado" });
-      }
+      const purchaseReq = await purchaseReqService.find(purchaseReqId);
 
       return res.status(200).json(purchaseReq);
     } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ error: error.message });
+      }
+
       console.log(error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
@@ -62,19 +64,19 @@ export class PurchaseRequestController {
 
     const data = UpdatePurchaseRequestDto.parse(req.body);
 
-    const purchaseReqExists = await purchaseReqService.hasPurchaseReq(
-      purchaseReqId
-    );
-
-    if (!purchaseReqExists) {
-      return res.status(404).json({ error: "Registro não encontrado" });
-    }
-
     try {
       const result = await purchaseReqService.update(purchaseReqId, data);
 
       return res.status(200).json(result);
     } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ error: error.message });
+      }
+
+      if (error instanceof StatusLockedException) {
+        return res.status(400).json({ error: error.message });
+      }
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           message: "Validation failed",

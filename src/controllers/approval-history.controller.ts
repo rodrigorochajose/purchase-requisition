@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import { ApprovalHistoryService } from "../services/approval-history.service.js";
 import z from "zod";
+import { StatusApprovalException } from "../exceptions/statusApprovalException.js";
+import { NotFoundException } from "../exceptions/notFoundException.js";
 
 const approvalHistService = new ApprovalHistoryService();
 
@@ -10,13 +12,11 @@ export class ApprovalHistoryController {
     const purchaseReq = Number(id);
 
     try {
-      const result = await approvalHistService.findByPurchaseReqId(purchaseReq);
+      const approval = await approvalHistService.findByPurchaseReqId(
+        purchaseReq
+      );
 
-      if (!result) {
-        return res.status(404).json({ error: "Registro não encontrado" });
-      }
-
-      return res.status(200).json(result);
+      return res.status(200).json(approval);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -34,17 +34,19 @@ export class ApprovalHistoryController {
     const { id } = req.params;
     const purchaseReqId = Number(id);
 
-    const previousApproval = await approvalHistService.getStatus(purchaseReqId);
-
-    if (previousApproval && previousApproval != "DRAFT") {
-      res.status(400).json({ error: "Status anterior precisa ser 'DRAFT'" });
-    }
-
     try {
       const approval = await approvalHistService.submit(purchaseReqId);
 
       return res.status(200).json(approval);
     } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ message: error.message });
+      }
+
+      if (error instanceof StatusApprovalException) {
+        return res.status(400).json({ message: error.message });
+      }
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           message: "Validation failed",
@@ -61,19 +63,19 @@ export class ApprovalHistoryController {
     const { id } = req.params;
     const purchaseReqId = Number(id);
 
-    const previousApproval = await approvalHistService.getStatus(purchaseReqId);
-
-    if (previousApproval && previousApproval != "SUBMITTED") {
-      res
-        .status(400)
-        .json({ error: "Status anterior precisa ser 'SUBMITTED'" });
-    }
-
     try {
       const approval = await approvalHistService.approve(purchaseReqId);
 
       return res.status(200).json(approval);
     } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ message: error.message });
+      }
+
+      if (error instanceof StatusApprovalException) {
+        return res.status(400).json({ message: error.message });
+      }
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           message: "Validation failed",
@@ -90,19 +92,19 @@ export class ApprovalHistoryController {
     const { id } = req.params;
     const purchaseReqId = Number(id);
 
-    const previousApproval = await approvalHistService.getStatus(purchaseReqId);
-
-    if (previousApproval && previousApproval != "SUBMITTED") {
-      res
-        .status(400)
-        .json({ error: "Status anterior precisa ser 'SUBMITTED'" });
-    }
-
     try {
       const approval = await approvalHistService.reject(purchaseReqId);
 
       return res.status(200).json(approval);
     } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ message: error.message });
+      }
+
+      if (error instanceof StatusApprovalException) {
+        return res.status(400).json({ message: error.message });
+      }
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           message: "Validation failed",

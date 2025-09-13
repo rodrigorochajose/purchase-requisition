@@ -3,33 +3,40 @@ import {
   RequestStatus,
   type ApprovalHistory,
 } from "@prisma/client";
+import { NotFoundException } from "../exceptions/notFoundException.js";
+import { StatusApprovalException } from "../exceptions/statusApprovalException.js";
 
 const prisma = new PrismaClient();
 
 export class ApprovalHistoryService {
-  async getStatus(id: number): Promise<RequestStatus | null> {
-    const status = await prisma.approvalHistory.findFirst({
-      where: { purchaseRequestId: id },
-      select: { status: true },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return status ? status.status : null;
-  }
-
-  async find(id: number): Promise<ApprovalHistory | null> {
-    return await prisma.approvalHistory.findFirst({
-      where: { purchaseRequestId: id },
-    });
-  }
-
-  async findByPurchaseReqId(id: number): Promise<ApprovalHistory[] | null> {
+  async findByPurchaseReqId(id: number): Promise<ApprovalHistory[]> {
     return await prisma.approvalHistory.findMany({
       where: { purchaseRequestId: id },
     });
   }
 
+  private async getStatus(purchaseRequestId: number): Promise<RequestStatus> {
+    const status = await prisma.approvalHistory.findFirst({
+      where: { purchaseRequestId },
+      select: { status: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!status) {
+      throw new NotFoundException();
+    }
+
+    return status.status;
+  }
+
   async submit(purchaseReqId: number): Promise<ApprovalHistory> {
+    const expectedStatus = "DRAFT";
+    const approval = await this.getStatus(purchaseReqId);
+
+    if (approval != expectedStatus) {
+      throw new StatusApprovalException(expectedStatus);
+    }
+
     return await prisma.approvalHistory.create({
       data: {
         purchaseRequestId: purchaseReqId,
@@ -39,6 +46,13 @@ export class ApprovalHistoryService {
   }
 
   async approve(purchaseReqId: number): Promise<ApprovalHistory> {
+    const expectedStatus = "SUBMITTED";
+    const approval = await this.getStatus(purchaseReqId);
+
+    if (approval != expectedStatus) {
+      throw new StatusApprovalException(expectedStatus);
+    }
+
     return await prisma.approvalHistory.create({
       data: {
         purchaseRequestId: purchaseReqId,
@@ -48,6 +62,13 @@ export class ApprovalHistoryService {
   }
 
   async reject(purchaseReqId: number): Promise<ApprovalHistory> {
+    const expectedStatus = "SUBMITTED";
+    const approval = await this.getStatus(purchaseReqId);
+
+    if (approval != expectedStatus) {
+      throw new StatusApprovalException(expectedStatus);
+    }
+
     return await prisma.approvalHistory.create({
       data: {
         purchaseRequestId: purchaseReqId,

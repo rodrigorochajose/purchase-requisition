@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import type { LoginResponseDtoType } from "../dto/login-response.dto.js";
 import type { CreateUserDtoType } from "../dto/create-user.dto.js";
 import type { UserResponseDtoType } from "../dto/user-response.dto.js";
+import { NotFoundException } from "../exceptions/notFoundException.js";
+import { InvalidCredentialsException } from "../exceptions/invalidCredentialsException.js";
 
 const userService = new UserService();
 
@@ -12,20 +14,17 @@ export class AuthService {
     return await userService.create(data);
   }
 
-  async login(
-    email: string,
-    password: string
-  ): Promise<LoginResponseDtoType | null> {
-    const user = await userService.findUniqueByEmail(email);
+  async login(email: string, password: string): Promise<LoginResponseDtoType> {
+    const user = await userService.findByEmail(email);
 
     if (!user) {
-      return null;
+      throw new NotFoundException();
     }
 
     const passwordMatch = bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return null;
+      throw new InvalidCredentialsException();
     }
 
     const payload = {

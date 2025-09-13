@@ -2,6 +2,8 @@ import { Prisma, PrismaClient, type PurchaseRequest } from "@prisma/client";
 import { type CreatePurchaseRequestDtoType } from "../dto/create-purchase-request.dto.js";
 import { type UpdatePurchaseRequestDtoType } from "../dto/update-purchase-request.dto.js";
 import { type CreateRequestItemsDtoType } from "../dto/create-request-items.dto.js";
+import { NotFoundException } from "../exceptions/notFoundException.js";
+import { StatusLockedException } from "../exceptions/statusLockedException.js";
 
 const prisma = new PrismaClient();
 
@@ -35,14 +37,20 @@ export class PurchaseRequestService {
     });
   }
 
-  async findUnique(id: number): Promise<PurchaseRequest | null> {
-    return await prisma.purchaseRequest.findUnique({
+  async find(id: number): Promise<PurchaseRequest> {
+    const purchaseReq = await prisma.purchaseRequest.findFirst({
       where: { id },
       include: {
         items: true,
         approvalHistory: true,
       },
     });
+
+    if (!purchaseReq) {
+      throw new NotFoundException();
+    }
+
+    return purchaseReq;
   }
 
   async hasPurchaseReq(id: number): Promise<boolean> {
@@ -53,18 +61,32 @@ export class PurchaseRequestService {
     return purchaseReq !== null;
   }
 
-  async update(id: number, updateDto: UpdatePurchaseRequestDtoType) {
+  async update(
+    purchaseRequestId: number,
+    updateDto: UpdatePurchaseRequestDtoType
+  ) {
     const existingItems = await prisma.requestItems.findMany({
-      where: { purchaseRequestId: id },
+      where: { purchaseRequestId },
     });
 
-    console.log(existingItems[0]);
+    if (!existingItems) {
+      throw new NotFoundException();
+    }
+
+    const status = await prisma.approvalHistory.findFirst({
+      where: { purchaseRequestId },
+      select: { status: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (status && status.status != "DRAFT") {
+      throw new StatusLockedException();
+    }
 
     const countExistingItems = existingItems.length;
     const countNewItems = updateDto.length;
 
     if (countExistingItems > countNewItems) {
-      console.log("deleting");
       const itemsToDelete = existingItems.splice(
         0,
         countExistingItems - countNewItems
@@ -74,8 +96,6 @@ export class PurchaseRequestService {
         await prisma.requestItems.delete({ where: { id: element.id } });
       });
     } else if (countExistingItems < countNewItems) {
-      console.log("adding");
-
       const itemsToAdd = updateDto.splice(
         0,
         countNewItems - countExistingItems
@@ -83,7 +103,7 @@ export class PurchaseRequestService {
 
       const data: CreateRequestItemsDtoType = itemsToAdd.map((item) => {
         return {
-          purchaseRequestId: id,
+          purchaseRequestId,
           description: item.description ?? "",
           quantity: item.quantity ?? 1,
           price: item.price ?? 1,
@@ -94,8 +114,6 @@ export class PurchaseRequestService {
         data,
       });
     }
-
-    console.log("updating");
 
     const updatePromises = updateDto.map((item, index) => {
       const existingItem = existingItems[index];
@@ -114,7 +132,7 @@ export class PurchaseRequestService {
     await Promise.all(updatePromises);
 
     return await prisma.requestItems.findMany({
-      where: { purchaseRequestId: id },
+      where: { purchaseRequestId },
     });
   }
 }

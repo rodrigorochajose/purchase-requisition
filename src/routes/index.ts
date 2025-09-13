@@ -20,13 +20,13 @@ routes.get("/", (req: Request, res: Response) => {
 routes.post("/auth/register", authController.register);
 routes.post("/auth/login", authController.login);
 
-routes.get("/user/:id", authMiddleware, userController.findUnique);
+routes.get("/user/:id", authMiddleware, userController.find);
 routes.patch("/user/:id", authMiddleware, userController.update);
 routes.get("/users", authMiddleware, userController.findMany);
 
 routes.post("/requests", authMiddleware, purchaseReqController.create);
 routes.get("/requests", authMiddleware, purchaseReqController.findMany);
-routes.get("/requests/:id", authMiddleware, purchaseReqController.findUnique);
+routes.get("/requests/:id", authMiddleware, purchaseReqController.find);
 routes.patch("/requests/:id", authMiddleware, purchaseReqController.update);
 
 routes.get(

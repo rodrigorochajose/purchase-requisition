@@ -2,6 +2,7 @@ import { type UserResponseDtoType } from "../dto/user-response.dto.js";
 import type { CreateUserDtoType } from "../dto/create-user.dto.js";
 import type { UpdateUserDtoType } from "../dto/update-user.dto.js";
 import { Prisma, PrismaClient, type User } from "@prisma/client";
+import { NotFoundException } from "../exceptions/notFoundException.js";
 
 const prisma = new PrismaClient();
 
@@ -16,24 +17,42 @@ export class UserService {
     return await prisma.user.findMany();
   }
 
-  async findUnique(id: number): Promise<UserResponseDtoType | null> {
-    const user = await prisma.user.findUnique({
+  async find(id: number): Promise<UserResponseDtoType> {
+    const user = await prisma.user.findFirst({
       where: { id },
     });
 
-    return user ? user : null;
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 
-  async findUniqueByEmail(email: string): Promise<User | null> {
-    return await prisma.user.findUnique({
+  async findByEmail(email: string): Promise<User> {
+    const user = await prisma.user.findFirst({
       where: { email },
     });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 
   async update(
     id: number,
     updateData: UpdateUserDtoType
   ): Promise<UserResponseDtoType> {
+    const user = await prisma.user.findFirst({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
     return await prisma.user.update({
       where: { id },
       data: updateData as Prisma.UserUpdateInput,

@@ -10,3 +10,5 @@ export const UserResponseDto = z.object({
 });
 
 export type UserResponseDtoType = z.infer<typeof UserResponseDto>;
+
+export const UsersResponseDto = z.array(UserResponseDto);

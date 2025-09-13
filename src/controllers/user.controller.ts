@@ -4,39 +4,23 @@ import {
   UpdateUserDto,
   type UpdateUserDtoType,
 } from "../dto/update-user.dto.js";
-import type { UserResponseDtoType } from "../dto/user-response.dto.js";
+import { UserResponseDto, UsersResponseDto } from "../dto/user-response.dto.js";
 import z from "zod";
+import { NotFoundException } from "../exceptions/notFoundException.js";
 
 const userService = new UserService();
 
 export class UserController {
-  async findUnique(req: Request, res: Response): Promise<Response> {
+  async find(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const userId = Number(id);
 
     try {
-      const user = await userService.findUnique(userId);
-
-      if (!user) {
-        return res.status(404).json({ error: "Registro não encontrado" });
-      }
-
-      const userResponse: UserResponseDtoType = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
-
-      return res.status(200).json(userResponse);
+      const user = await userService.find(userId);
+      return res.status(200).json(UserResponseDto.parse(user));
     } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({
-          message: "Validation failed",
-          errors: error.issues,
-        });
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ message: error.message });
       }
 
       console.error(error);
@@ -47,48 +31,28 @@ export class UserController {
   async findMany(req: Request, res: Response): Promise<Response> {
     const users = await userService.findMany();
 
-    const usersResponse: UserResponseDtoType[] = users.map((user) => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }));
-
-    return res.status(200).json(usersResponse);
+    return res.status(200).json(UsersResponseDto.parse(users));
   }
 
   async update(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const userId = Number(id);
 
+    const data: UpdateUserDtoType = UpdateUserDto.parse(req.body);
+
+    const updateData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+
     try {
-      const user = await userService.findUnique(userId);
-
-      if (!user) {
-        res.status(404).json({ error: "Registro não encontrado" });
-      }
-
-      const data: UpdateUserDtoType = UpdateUserDto.parse(req.body);
-
-      const updateData = Object.fromEntries(
-        Object.entries(data).filter(([_, value]) => value !== undefined)
-      );
-
       const result = await userService.update(userId, updateData);
 
-      const userResponse: UserResponseDtoType = {
-        id: result.id,
-        name: result.name,
-        email: result.email,
-        role: result.role,
-        createdAt: result.createdAt,
-        updatedAt: result.updatedAt,
-      };
-
-      return res.status(200).json(userResponse);
+      return res.status(200).json(UserResponseDto.parse(result));
     } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return res.status(404).json({ message: error.message });
+      }
+
       if (error.code === "P2002") {
         return res.status(409).json({ error: "Email já existe" });
       }
