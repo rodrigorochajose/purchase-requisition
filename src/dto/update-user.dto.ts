@@ -1,5 +1,9 @@
-import { Role } from "@prisma/client";
 import z from "zod";
+
+enum Role {
+  USER = "USER",
+  APPROVER = "APPROVER",
+}
 
 export const BaseUserDto = z.object({
   name: z.string(),

@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
-import { PurchaseRequestService } from "../services/purchase-request.service.js";
+import { PurchaseRequestService } from "../services/purchase-request.service";
 import {
   CreatePurchaseRequestDto,
   type CreatePurchaseRequestDtoType,
-} from "../dto/create-purchase-request.dto.js";
-import { UpdatePurchaseRequestDto } from "../dto/update-purchase-request.dto.js";
+} from "../dto/create-purchase-request.dto";
+import { UpdatePurchaseRequestDto } from "../dto/update-purchase-request.dto";
 import z from "zod";
-import { NotFoundException } from "../exceptions/notFoundException.js";
-import { StatusLockedException } from "../exceptions/statusLockedException.js";
+import { NotFoundException } from "../exceptions/notFoundException";
+import { StatusLockedException } from "../exceptions/statusLockedException";
 
 const purchaseReqService = new PurchaseRequestService();
 

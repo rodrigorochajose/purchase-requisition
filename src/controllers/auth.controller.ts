@@ -1,13 +1,10 @@
 import type { Request, Response } from "express";
-import { AuthService } from "../services/auth.service.js";
-import {
-  CreateUserDto,
-  type CreateUserDtoType,
-} from "../dto/create-user.dto.js";
-import bcrypt from "bcrypt";
-import { UserService } from "../services/user.service.js";
-import { UserResponseDto } from "../dto/user-response.dto.js";
-import { InvalidCredentialsException } from "../exceptions/invalidCredentialsException.js";
+import { AuthService } from "../services/auth.service";
+import { CreateUserDto, type CreateUserDtoType } from "../dto/create-user.dto";
+import * as bcrypt from "bcrypt";
+import { UserService } from "../services/user.service";
+import { UserResponseDto } from "../dto/user-response.dto";
+import { InvalidCredentialsException } from "../exceptions/invalidCredentialsException";
 
 const authService = new AuthService();
 const userService = new UserService();

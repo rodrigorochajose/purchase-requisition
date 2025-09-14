@@ -1,11 +1,11 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { UserController } from "../controllers/user.controller.js";
-import { AuthController } from "../controllers/auth.controller.js";
-import { authMiddleware } from "../middlewares/auth.middleware.js";
-import { roleMiddleware } from "../middlewares/role.middleware.js";
-import { PurchaseRequestController } from "../controllers/purchase-request.controller.js";
-import { ApprovalHistoryController } from "../controllers/approval-history.controller.js";
+import { UserController } from "../controllers/user.controller";
+import { AuthController } from "../controllers/auth.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
+import { roleMiddleware } from "../middlewares/role.middleware";
+import { PurchaseRequestController } from "../controllers/purchase-request.controller";
+import { ApprovalHistoryController } from "../controllers/approval-history.controller";
 
 const routes = Router();
 const authController = new AuthController();
@@ -28,12 +28,6 @@ routes.post("/requests", authMiddleware, purchaseReqController.create);
 routes.get("/requests", authMiddleware, purchaseReqController.findMany);
 routes.get("/requests/:id", authMiddleware, purchaseReqController.find);
 routes.patch("/requests/:id", authMiddleware, purchaseReqController.update);
-
-routes.get(
-  "/history/:id",
-  authMiddleware,
-  approvalHistController.findByPurchaseId
-);
 
 routes.post(
   "/requests/:id/submit",
@@ -65,6 +59,12 @@ routes.get(
   "/reports/summary",
   authMiddleware,
   approvalHistController.getSummary
+);
+
+routes.get(
+  "/history/:id",
+  authMiddleware,
+  approvalHistController.findByPurchaseId
 );
 
 export { routes };

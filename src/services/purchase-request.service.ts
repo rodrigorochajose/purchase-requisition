@@ -1,9 +1,9 @@
 import { Prisma, PrismaClient, type PurchaseRequest } from "@prisma/client";
-import { type CreatePurchaseRequestDtoType } from "../dto/create-purchase-request.dto.js";
-import { type UpdatePurchaseRequestDtoType } from "../dto/update-purchase-request.dto.js";
-import { type CreateRequestItemsDtoType } from "../dto/create-request-items.dto.js";
-import { NotFoundException } from "../exceptions/notFoundException.js";
-import { StatusLockedException } from "../exceptions/statusLockedException.js";
+import { type CreatePurchaseRequestDtoType } from "../dto/create-purchase-request.dto";
+import { type UpdatePurchaseRequestDtoType } from "../dto/update-purchase-request.dto";
+import { type CreateRequestItemsDtoType } from "../dto/create-request-items.dto";
+import { NotFoundException } from "../exceptions/notFoundException";
+import { StatusLockedException } from "../exceptions/statusLockedException";
 
 const prisma = new PrismaClient();
 

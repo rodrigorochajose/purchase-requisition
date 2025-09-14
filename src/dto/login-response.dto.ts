@@ -1,5 +1,5 @@
-import z from "zod";
-import { UserResponseDto } from "./user-response.dto.js";
+import { UserResponseDto } from "./user-response.dto";
+import * as z from "zod";
 
 export const LoginResponseDto = z.object({
   token: z.string(),

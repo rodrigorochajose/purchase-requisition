@@ -1,8 +1,8 @@
-import type { Request, Response } from "express";
-import { ApprovalHistoryService } from "../services/approval-history.service.js";
 import z from "zod";
-import { StatusApprovalException } from "../exceptions/statusApprovalException.js";
-import { NotFoundException } from "../exceptions/notFoundException.js";
+import type { Request, Response } from "express";
+import { ApprovalHistoryService } from "../services/approval-history.service";
+import { StatusApprovalException } from "../exceptions/statusApprovalException";
+import { NotFoundException } from "../exceptions/notFoundException";
 
 const approvalHistService = new ApprovalHistoryService();
 

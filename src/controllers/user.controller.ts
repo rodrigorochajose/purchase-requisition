@@ -40,12 +40,8 @@ export class UserController {
 
     const data: UpdateUserDtoType = UpdateUserDto.parse(req.body);
 
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined)
-    );
-
     try {
-      const result = await userService.update(userId, updateData);
+      const result = await userService.update(userId, data);
 
       return res.status(200).json(UserResponseDto.parse(result));
     } catch (error: any) {

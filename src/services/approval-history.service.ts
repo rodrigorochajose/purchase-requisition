@@ -3,8 +3,8 @@ import {
   RequestStatus,
   type ApprovalHistory,
 } from "@prisma/client";
-import { NotFoundException } from "../exceptions/notFoundException.js";
-import { StatusApprovalException } from "../exceptions/statusApprovalException.js";
+import { NotFoundException } from "../exceptions/notFoundException";
+import { StatusApprovalException } from "../exceptions/statusApprovalException";
 
 const prisma = new PrismaClient();
 

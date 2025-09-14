@@ -1,11 +1,11 @@
-import { UserService } from "./user.service.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import type { LoginResponseDtoType } from "../dto/login-response.dto.js";
-import type { CreateUserDtoType } from "../dto/create-user.dto.js";
-import type { UserResponseDtoType } from "../dto/user-response.dto.js";
-import { NotFoundException } from "../exceptions/notFoundException.js";
-import { InvalidCredentialsException } from "../exceptions/invalidCredentialsException.js";
+import { UserService } from "./user.service";
+import type { LoginResponseDtoType } from "../dto/login-response.dto";
+import type { CreateUserDtoType } from "../dto/create-user.dto";
+import type { UserResponseDtoType } from "../dto/user-response.dto";
+import { NotFoundException } from "../exceptions/notFoundException";
+import { InvalidCredentialsException } from "../exceptions/invalidCredentialsException";
+import * as bcrypt from "bcrypt";
+import * as jwt from "jsonwebtoken";
 
 const userService = new UserService();
 
@@ -21,7 +21,7 @@ export class AuthService {
       throw new NotFoundException();
     }
 
-    const passwordMatch = bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       throw new InvalidCredentialsException();

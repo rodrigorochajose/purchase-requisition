@@ -1,4 +1,4 @@
-import { JwtPayload } from "../../generated/prisma/index.js";
+import { JwtPayload } from "../../generated/prisma/index";
 
 declare global {
   namespace Express {

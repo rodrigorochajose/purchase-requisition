@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 
 const UpdatePurchaseRequestSchema = z.object({
   purchaseRequestId: z.number().int().positive().optional(),

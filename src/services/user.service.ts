@@ -1,8 +1,8 @@
-import { type UserResponseDtoType } from "../dto/user-response.dto.js";
-import type { CreateUserDtoType } from "../dto/create-user.dto.js";
-import type { UpdateUserDtoType } from "../dto/update-user.dto.js";
+import { type UserResponseDtoType } from "../dto/user-response.dto";
+import type { CreateUserDtoType } from "../dto/create-user.dto";
+import type { UpdateUserDtoType } from "../dto/update-user.dto";
 import { Prisma, PrismaClient, type User } from "@prisma/client";
-import { NotFoundException } from "../exceptions/notFoundException.js";
+import { NotFoundException } from "../exceptions/notFoundException";
 
 const prisma = new PrismaClient();
 
